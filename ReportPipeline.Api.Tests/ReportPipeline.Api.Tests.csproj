@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CSharpPracticeApi\CSharpPracticeApi.csproj" />
+    <ProjectReference Include="..\ReportPipeline.Api\ReportPipeline.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>

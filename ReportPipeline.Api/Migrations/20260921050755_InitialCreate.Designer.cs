@@ -8,11 +8,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace CSharpPracticeApi.Migrations
+namespace ReportPipeline.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260921123656_modifyUnmappedFields")]
-    partial class modifyUnmappedFields
+    [Migration("20260921050755_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -118,7 +118,7 @@ namespace CSharpPracticeApi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UnmappedFields")
+                    b.Property<string>("UmappedFields")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("WorkOrderNo")

@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/方案項目/">
+    <File Path=".gitignore" />
+  </Folder>
+  <Project Path="ReportPipeline.Api.Tests/ReportPipeline.Api.Tests.csproj" />
+  <Project Path="ReportPipeline.Api/ReportPipeline.Api.csproj" />
+</Solution>

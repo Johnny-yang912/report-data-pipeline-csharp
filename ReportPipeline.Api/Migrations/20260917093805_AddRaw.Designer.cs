@@ -7,11 +7,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace CSharpPracticeApi.Migrations
+namespace ReportPipeline.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260917031134_Init")]
-    partial class Init
+    [Migration("20260917093805_AddRaw")]
+    partial class AddRaw
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -45,7 +45,24 @@ namespace CSharpPracticeApi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
+                });
+
+            modelBuilder.Entity("Raw", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Raw", (string)null);
                 });
 
             modelBuilder.Entity("User", b =>
@@ -62,7 +79,7 @@ namespace CSharpPracticeApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Product", b =>

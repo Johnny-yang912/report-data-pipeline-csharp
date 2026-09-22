@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace CSharpPracticeApi.Migrations
+namespace ReportPipeline.Api.Migrations
 {
     /// <inheritdoc />
     public partial class AddClaimedAt : Migration

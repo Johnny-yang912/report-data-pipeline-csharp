@@ -1,0 +1,6 @@
+   @ReportPipelineApi_HostAddress = http://localhost:5245
+
+   GET {{ReportPipelineApi_HostAddress}}/api/reports/1
+   Accept: application/json
+
+   ###

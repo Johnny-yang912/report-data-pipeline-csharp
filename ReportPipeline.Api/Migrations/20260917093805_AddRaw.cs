@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace CSharpPracticeApi.Migrations
+namespace ReportPipeline.Api.Migrations
 {
     /// <inheritdoc />
     public partial class AddRaw : Migration

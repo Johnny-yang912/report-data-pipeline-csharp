@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace CSharpPracticeApi.Migrations
+namespace ReportPipeline.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20260918034037_AddClaimedAt")]
