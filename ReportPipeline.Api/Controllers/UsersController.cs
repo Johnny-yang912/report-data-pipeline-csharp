@@ -11,7 +11,7 @@ public class ReportsController : ControllerBase
 
     private readonly ChannelWriter<int> _writer;
 
-    public ReportsController(AppDbContext db, RawProcessor processor, ChannelWriter<int> writer)
+    public ReportsController(AppDbContext db, ChannelWriter<int> writer)
     {
         _db = db;
         _writer = writer;
@@ -56,9 +56,10 @@ public class ReportsController : ControllerBase
         _db.Raws.Add(raw);
         await _db.SaveChangesAsync();  //INSERT Raw
 
+        //背景處哩，拆包 → clean → 寫 ODS
         _writer.TryWrite(raw.Id);
 
-        //拆包 → clean → 寫 ODS
+        //快速回覆
         return Accepted(new { rawId = raw.Id, status = "pending" });
 
     }
