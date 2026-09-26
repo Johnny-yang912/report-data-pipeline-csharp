@@ -56,7 +56,7 @@ public class ReportsController : ControllerBase
         _db.Raws.Add(raw);
         await _db.SaveChangesAsync();  //INSERT Raw
 
-        //背景處哩，拆包 → clean → 寫 ODS
+        //背景處理，拆包 → clean → 寫 ODS
         _writer.TryWrite(raw.Id);
 
         //快速回覆
