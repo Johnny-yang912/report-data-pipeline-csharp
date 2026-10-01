@@ -1,0 +1,33 @@
+refactor(raw): drop Raw.ReportId; track arrivals by RawId
+
+
+
+Raw.ReportId was never written and always held an empty string.
+
+Populating it at the endpoint would have required a second parse,
+
+with rules that could disagree with the Processor's deserializer.
+
+
+
+Raw records arrivals only; the business identity lives in ODS
+
+(Reports.ReportId). Normal tracing goes through Reports.RawId back
+
+to Raw. Resubmissions and failed records are arrival-level anomalies
+
+and are investigated directly on Raw.Payload via JSON_VALUE.
+
+
+
+- RawModel: remove ReportId property
+
+- Migration RemoveRawReportId: drop column Raw.ReportId
+
+- TryClaimRawTest: remove ReportId from seed data
+
+- Add ADR-0001
+
+
+
+Refs: ADR-0001
