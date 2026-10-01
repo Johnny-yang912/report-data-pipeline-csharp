@@ -11,7 +11,6 @@ public class Raw
 
     public DateTime? ClaimedAt { get; set; }  // UTC，搶佔成功時寫入
 
-    public string ReportId { get; set; } = string.Empty; //系統攤平欄位，方便追蹤
     public string Payload { get; set; } = string.Empty; //整包原文
     
 }

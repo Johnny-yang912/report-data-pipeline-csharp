@@ -11,7 +11,7 @@ public class TryClaimTests
         int rawId;
         using (var seed = testDb.CreateContext())
         {
-            var raw = new Raw { ReportId = "R001", Payload = "Test payload", Status = "pending" };
+            var raw = new Raw { Payload = "Test payload", Status = "pending" };
             seed.Raws.Add(raw);
             await seed.SaveChangesAsync();
             rawId = raw.Id;               // SaveChanges 之後 Id 才會被填上
