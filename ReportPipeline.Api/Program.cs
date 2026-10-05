@@ -45,6 +45,8 @@ builder.Services.AddSingleton(sp => sp.GetRequiredService<Channel<int>>().Writer
 builder.Services.AddHostedService<ChannelWorker>();
 builder.Services.AddHostedService<ScanWorker>();
 
+builder.Services.AddSingleton<PipelineMetrics>();
+
 var app = builder.Build();
 app.Logger.LogInformation("Loaded {ApiKeyCount} API keys", apiKeys.Count);
 

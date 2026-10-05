@@ -6,10 +6,12 @@ public class RawProcessor
 {
     private readonly AppDbContext _db;
     private readonly ILogger<RawProcessor> _logger;
-    public RawProcessor(AppDbContext db, ILogger<RawProcessor> logger)
+    private readonly PipelineMetrics _metrics;
+    public RawProcessor(AppDbContext db, ILogger<RawProcessor> logger, PipelineMetrics metrics)
     {
         _db = db;
         _logger = logger;
+        _metrics = metrics;
     }
 
     // Web 預設：屬性名不分大小寫、數字可從字串讀取（"36" → 36）
@@ -40,10 +42,12 @@ public class RawProcessor
 
         _db.ChangeTracker.Clear();
 
+
+        Raw ? raw = null;
         try
         {
             // 1. 讀 Raw
-            var raw = await _db.Raws.FindAsync(rawId)
+            raw = await _db.Raws.FindAsync(rawId)
                 ?? throw new InvalidOperationException($"Raw {rawId} not found");
 
             // 2. 拆包：解析失敗 = 連形狀都沒有，無法產生 Report → Raw 標 error，不丟例外
@@ -55,6 +59,7 @@ public class RawProcessor
                 raw.ErrorMessage = errorMessage;
                 await _db.SaveChangesAsync();
                 _logger.LogWarning("Raw {RawId} marked error: {ErrorCode} (source {SourceClientId})", raw.Id, raw.ErrorCode, raw.SourceClientId);
+                _metrics.RecordOutcome(raw.Status, raw.ErrorCode, raw.SourceClientId);
                 return null;
             }
 
@@ -66,6 +71,7 @@ public class RawProcessor
                 raw.ErrorMessage = "ReportId is missing or blank";
                 await _db.SaveChangesAsync();
                 _logger.LogWarning("Raw {RawId} marked error: {ErrorCode} (source {SourceClientId})", raw.Id, raw.ErrorCode, raw.SourceClientId);
+                _metrics.RecordOutcome(raw.Status, raw.ErrorCode, raw.SourceClientId);
                 return null;
             }
 
@@ -79,6 +85,7 @@ public class RawProcessor
             _db.Reports.Add(report);
             raw.Status = "processed";
             await _db.SaveChangesAsync();
+            _metrics.RecordOutcome(raw.Status, raw.ErrorCode, raw.SourceClientId);
 
             return report;
         }
@@ -92,6 +99,7 @@ public class RawProcessor
                     .SetProperty(r => r.ErrorCode, ErrorCodes.DuplicateKey)
                     .SetProperty(r => r.ErrorMessage, sqlEx.Message));
             _logger.LogWarning("Raw {RawId} marked duplicate: {ErrorCode}",rawId, ErrorCodes.DuplicateKey);
+            _metrics.RecordOutcome("duplicate", ErrorCodes.DuplicateKey, raw?.SourceClientId);
             return null;
         }
         catch (Exception ex)
@@ -100,6 +108,7 @@ public class RawProcessor
             // 所以上面尚未寫成功的 Report 不會被一起送出
             // 先記 log：若下面的標記本身也失敗，原始錯誤仍有紀錄
             _logger.LogError(ex, "Raw {RawId} system error", rawId);
+            _metrics.RecordOutcome("error", ErrorCodes.SystemError, raw?.SourceClientId);
             await _db.Raws
                 .Where(r => r.Id == rawId && r.Status == "processing")
                 .ExecuteUpdateAsync(s => s

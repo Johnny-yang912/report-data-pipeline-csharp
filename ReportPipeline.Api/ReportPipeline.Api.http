@@ -63,7 +63,7 @@ X-API-Key: {{ApiKey}}
 Content-Type: application/json
 
 {
-  "reportId": "R1002",
+  "reportId": "R1005",
   "workOrderNo": "WO-01",
   "itemCode": "ITEM-1",
   "machineId": "M01",
@@ -96,4 +96,4 @@ POST {{ReportPipelineApi_HostAddress}}/api/reports/raw
 X-API-Key: {{ApiKey}}
 Content-Type: application/json
 
-{"reportId": "R1002"}
+{"reportId": "R1005"}
