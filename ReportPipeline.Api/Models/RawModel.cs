@@ -7,6 +7,8 @@ public class Raw
     public DateTime ReceivedAt { get; set; } = DateTime.UtcNow; // UTC，寫入DB時自動生成
 
     public string Status { get; set; } = "pending"; //pending, processing, processed, error,duplicate
+
+    public string? ErrorCode { get; set; } //若處理失敗，寫入錯誤代碼
     public string? ErrorMessage { get; set; } //若處理失敗，寫入錯誤訊息
 
     public DateTime? ClaimedAt { get; set; }  // UTC，搶佔成功時寫入

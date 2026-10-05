@@ -9,6 +9,7 @@ public class RawConfigurations : IEntityTypeConfiguration<Raw>
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Payload).IsRequired(); // 設定 Payload 欄位為必填
         builder.HasIndex(r => new { r.Status, r.ClaimedAt });
+        builder.Property(r => r.ErrorCode).HasMaxLength(64);
         builder.Property(r => r.SourceClientId).HasMaxLength(64);
     }
 }

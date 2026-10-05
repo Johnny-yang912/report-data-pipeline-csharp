@@ -19,3 +19,40 @@ X-API-Key: {{ApiKey}}
 Content-Type: application/json
 
 {"reportId": "R900"}
+
+
+###
+POST {{ReportPipelineApi_HostAddress}}/api/reports/raw
+X-API-Key: {{ApiKey}}
+Content-Type: application/json
+
+{"workOrderNo": "WO-01"}
+
+###
+
+POST {{ReportPipelineApi_HostAddress}}/api/reports/raw
+X-API-Key: {{ApiKey}}
+Content-Type: application/json
+
+{"reportId": "   ", "workOrderNo": "WO-01"}
+
+### JSON_PARSE_ERROR：型別不符（數量給了字串）
+POST {{ReportPipelineApi_HostAddress}}/api/reports/raw
+X-API-Key: {{ApiKey}}
+Content-Type: application/json
+
+{"reportId": "R901", "quantityOK": "abc"}
+
+### JSON_NULL_PAYLOAD
+POST {{ReportPipelineApi_HostAddress}}/api/reports/raw
+X-API-Key: {{ApiKey}}
+Content-Type: application/json
+
+null
+
+### DUPLICATE_KEY：同一個 reportId 送兩次（第二次才會撞）
+POST {{ReportPipelineApi_HostAddress}}/api/reports/raw
+X-API-Key: {{ApiKey}}
+Content-Type: application/json
+
+{"reportId": "R902"}

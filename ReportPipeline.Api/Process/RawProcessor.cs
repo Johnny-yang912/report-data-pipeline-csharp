@@ -42,11 +42,22 @@ public class RawProcessor
                 ?? throw new InvalidOperationException($"Raw {rawId} not found");
 
             // 2. 拆包：解析失敗 = 連形狀都沒有，無法產生 Report → Raw 標 error，不丟例外
-            var payload = TryDeserialize(raw.Payload, out var parseError);
+            var payload = TryDeserialize(raw.Payload, out var errorCode, out var errorMessage);
             if (payload is null)
             {
                 raw.Status = "error";
-                raw.ErrorMessage = parseError;
+                raw.ErrorCode = errorCode;
+                raw.ErrorMessage = errorMessage;
+                await _db.SaveChangesAsync();
+                return null;
+            }
+
+            //2.5. ReportId不能為空
+            if (string.IsNullOrWhiteSpace(payload.ReportId))
+            {
+                raw.Status = "error";
+                raw.ErrorCode = ErrorCodes.MissingReportId;
+                raw.ErrorMessage = "ReportId is missing or blank";
                 await _db.SaveChangesAsync();
                 return null;
             }
@@ -71,7 +82,8 @@ public class RawProcessor
                 .Where(r => r.Id == rawId && r.Status == "processing")
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(r => r.Status, "duplicate")
-                    .SetProperty(r => r.ErrorMessage, $"SQL_DUPLICATE_KEY: {sqlEx.Message}"));
+                    .SetProperty(r => r.ErrorCode, ErrorCodes.DuplicateKey)
+                    .SetProperty(r => r.ErrorMessage, sqlEx.Message));
             return null;
         }
         catch (Exception ex)
@@ -82,22 +94,31 @@ public class RawProcessor
                 .Where(r => r.Id == rawId && r.Status == "processing")
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(r => r.Status, "error")
+                    .SetProperty(r => r.ErrorCode, ErrorCodes.SystemError)
                     .SetProperty(r => r.ErrorMessage, ex.Message));
             throw;
         }
     }
 
-    private static ReportPayload? TryDeserialize(string json, out string? error)
+    private static ReportPayload? TryDeserialize(string json, out string? errorCode, out string? errorMessage)
     {
         try
         {
             var payload = JsonSerializer.Deserialize<ReportPayload>(json, JsonOpts);
-            error = payload is null ? "JSON_NULL_PAYLOAD" : null;
+            if (payload is null)
+            {
+                errorCode = ErrorCodes.JsonNullPayload;
+                errorMessage = "Payload deserialized to null";
+                return null;
+            }
+            errorCode = null;
+            errorMessage = null;
             return payload;
         }
         catch (JsonException ex)
         {
-            error = $"JSON_PARSE_ERROR: {ex.Message}";
+            errorCode = ErrorCodes.JsonParseError;
+            errorMessage = ex.Message;
             return null;
         }
     }
@@ -109,7 +130,7 @@ public class RawProcessor
         return new Report
         {
             RawId = rawId,
-            ReportId = p.ReportId ?? string.Empty,
+            ReportId = p.ReportId,
             WorkOrderNo = p.WorkOrderNo ?? string.Empty,
             ItemCode = p.ItemCode ?? string.Empty,
             MachineId = p.MachineId ?? string.Empty,
