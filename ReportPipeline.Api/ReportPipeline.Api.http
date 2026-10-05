@@ -1,6 +1,21 @@
-   @ReportPipelineApi_HostAddress = http://localhost:5245
+@ReportPipelineApi_HostAddress = http://localhost:5245
 
-   GET {{ReportPipelineApi_HostAddress}}/api/reports/1
-   Accept: application/json
+GET {{ReportPipelineApi_HostAddress}}/api/reports/raw/1
+X-API-Key: {{ApiKey}}
 
-   ###
+###
+
+GET {{ReportPipelineApi_HostAddress}}/api/reports/raw/1
+X-API-Key: wrong-key
+
+###
+
+GET {{ReportPipelineApi_HostAddress}}/api/reports/raw/1
+
+###
+
+POST {{ReportPipelineApi_HostAddress}}/api/reports/raw
+X-API-Key: {{ApiKey}}
+Content-Type: application/json
+
+{"reportId": "R900"}

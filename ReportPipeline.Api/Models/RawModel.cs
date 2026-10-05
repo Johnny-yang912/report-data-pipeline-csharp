@@ -12,5 +12,7 @@ public class Raw
     public DateTime? ClaimedAt { get; set; }  // UTC，搶佔成功時寫入
 
     public string Payload { get; set; } = string.Empty; //整包原文
-    
+
+    public string? SourceClientId { get; set; } //來源X-API-Key對應的ClientId
+
 }

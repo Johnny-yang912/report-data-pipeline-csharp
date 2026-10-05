@@ -52,7 +52,8 @@ public class ReportsController : ControllerBase
     [HttpPost("raw")]
     public async Task<IActionResult> PostRaw([FromBody] JsonElement body)
     {
-        var raw = new Raw { Payload = body.GetRawText() };
+        var clientId = HttpContext.Items[ApiKeyMiddleware.ClientIdItemKey] as string;
+        var raw = new Raw { Payload = body.GetRawText(), SourceClientId = clientId };
         _db.Raws.Add(raw);
         await _db.SaveChangesAsync();  //INSERT Raw
 

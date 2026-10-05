@@ -17,6 +17,19 @@ if (string.IsNullOrWhiteSpace(connectionString))
     throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 }
 
+var apiKeys = builder.Configuration
+    .GetSection("ApiKeys")
+    .Get<List<ApiKeyEntry>>();
+
+if (apiKeys is null || apiKeys.Count == 0)
+{
+    throw new InvalidOperationException("No API keys configured in 'ApiKeys'.");
+}
+
+Console.WriteLine($"[auth] 已載入 {apiKeys.Count} 把 API key");
+
+builder.Services.AddSingleton<IReadOnlyList<ApiKeyEntry>>(apiKeys);
+
 builder.Services.AddScoped<RawProcessor>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -46,6 +59,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseMiddleware<ApiKeyMiddleware>();
 
 app.MapControllers();
 
