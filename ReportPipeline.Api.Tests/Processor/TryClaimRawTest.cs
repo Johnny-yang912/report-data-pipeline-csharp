@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 public class TryClaimTests
 {
@@ -6,6 +7,7 @@ public class TryClaimTests
     public async Task SecondClaim_ReturnsZero()
     {
         using var testDb = new SqliteTestDb();
+        
 
         // Arrange：塞資料
         int rawId;
@@ -19,8 +21,8 @@ public class TryClaimTests
 
         using var ctxA = testDb.CreateContext();
         using var ctxB = testDb.CreateContext();
-        var repoA = new RawProcessor(ctxA);
-        var repoB = new RawProcessor(ctxB);
+        var repoA = TestProcessorFactory.Create(ctxA);
+        var repoB = TestProcessorFactory.Create(ctxB);
 
         // Act
         var first = await repoA.TryClaimRawAsync(rawId);

@@ -8,6 +8,10 @@ public class ODSReportsConfigurations : IEntityTypeConfiguration<Report>
         builder.ToTable("Reports");
         builder.HasKey(r => r.Id);
         builder.HasIndex(r => r.ReportId).IsUnique();
+        builder.HasOne<Raw>()
+       .WithOne()
+       .HasForeignKey<Report>(r => r.RawId)
+       .OnDelete(DeleteBehavior.Restrict);
     }
 }
 

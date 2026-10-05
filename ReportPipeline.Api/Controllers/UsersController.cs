@@ -70,7 +70,7 @@ public class ReportsController : ControllerBase
     {
         var raw = await _db.Raws
             .Where(r => r.Id == id)
-            .Select(r => new RawResponse(r.Id, r.Payload, r.Status, r.ErrorMessage))
+            .Select(r => new RawResponse(r.Id, r.Payload,r.SourceClientId, r.Status, r.ErrorCode, r.ErrorMessage))
             .FirstOrDefaultAsync();
         if (raw == null) return NotFound();
         return raw;

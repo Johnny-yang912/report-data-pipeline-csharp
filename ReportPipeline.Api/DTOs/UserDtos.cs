@@ -7,7 +7,9 @@ public record RawRequest(
 public record RawResponse(
     int Id,
     string Payload,
+    string? SourceClientId,
     string Status,
+    string? ErrorCode,
     string? ErrorMessage
 );
 

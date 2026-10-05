@@ -4,6 +4,7 @@
     <File Path="README.md" />
   </Folder>
   <Folder Name="/方案項目/ADR/">
+    <File Path="ADR-0002.md" />
     <File Path="docs/adr/ADR-0001.md" />
   </Folder>
   <Project Path="ReportPipeline.Api.Tests/ReportPipeline.Api.Tests.csproj" />
