@@ -4,11 +4,13 @@ public class ChannelWorker : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ChannelReader<int> _reader;
+    private readonly ILogger<ChannelWorker> _logger;
 
-    public ChannelWorker(IServiceScopeFactory scopeFactory, ChannelReader<int> reader)
+    public ChannelWorker(IServiceScopeFactory scopeFactory, ChannelReader<int> reader, ILogger<ChannelWorker> logger)
     {
         _scopeFactory = scopeFactory;
         _reader = reader;
+        _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -23,11 +25,11 @@ public class ChannelWorker : BackgroundService
                 try
                 {
                     await processor.ProcessAsync(rawId);
-                    Console.WriteLine($"[channel] 完成 rawId={rawId}");
+                    _logger.LogDebug("Raw {RawId} processed", rawId);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[channel] 失敗 rawId={rawId}: {ex.Message}");
+                    _logger.LogError(ex, "Raw {RawId} failed in channel worker", rawId);
                 }
             }
         }
@@ -36,6 +38,6 @@ public class ChannelWorker : BackgroundService
             // 預期中的關機
         }
 
-        Console.WriteLine("[channel] 已退出");
+        _logger.LogInformation("Channel worker stopped");
     }
 }

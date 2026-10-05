@@ -3,10 +3,12 @@
 public class ScanWorker : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger<ScanWorker> _logger;
 
-    public ScanWorker(IServiceScopeFactory scopeFactory)   // 這個是 Singleton，安全
+    public ScanWorker(IServiceScopeFactory scopeFactory, ILogger<ScanWorker> logger)   // 這個是 Singleton，安全
     {
         _scopeFactory = scopeFactory;
+        _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -32,7 +34,7 @@ public class ScanWorker : BackgroundService
                         stoppingToken);
 
                 if (recovered > 0)
-                    Console.WriteLine($"[scan] 回收 stale processing: {recovered} 筆");
+                    _logger.LogWarning("Recovered {RecoveredCount} stale processing raws", recovered);
 
                 // 第二步：撈 pending（回收的自然被包含在內）
                 var raw = await db.Raws
@@ -44,14 +46,14 @@ public class ScanWorker : BackgroundService
 
                 if (raw is null)
                 {
-                    await Task.Delay(30_0000, stoppingToken);
-                    Console.WriteLine($"[scan] idle {DateTime.Now:HH:mm:ss}");
+                    _logger.LogDebug("Scan idle, no pending raws");
+                    await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
                     continue;
                 }
 
                  
                     await processor.ProcessAsync(raw.Id);
-                    Console.WriteLine($"[scan] 完成 rawId={raw.Id}");
+                    _logger.LogDebug("Raw {RawId} processed", raw.Id);
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
@@ -59,7 +61,7 @@ public class ScanWorker : BackgroundService
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[scan] 失敗 rawId={rawId}: {ex.Message}");
+                    _logger.LogError(ex, "Raw {RawId} failed in scan worker", rawId);
                     await Task.Delay(5_000, stoppingToken);
                 }
             }

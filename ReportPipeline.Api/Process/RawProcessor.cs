@@ -5,7 +5,12 @@ using System.Text.Json;
 public class RawProcessor
 {
     private readonly AppDbContext _db;
-    public RawProcessor(AppDbContext db) => _db = db;
+    private readonly ILogger<RawProcessor> _logger;
+    public RawProcessor(AppDbContext db, ILogger<RawProcessor> logger)
+    {
+        _db = db;
+        _logger = logger;
+    }
 
     // Web 預設：屬性名不分大小寫、數字可從字串讀取（"36" → 36）
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
@@ -49,6 +54,7 @@ public class RawProcessor
                 raw.ErrorCode = errorCode;
                 raw.ErrorMessage = errorMessage;
                 await _db.SaveChangesAsync();
+                _logger.LogWarning("Raw {RawId} marked error: {ErrorCode} (source {SourceClientId})", raw.Id, raw.ErrorCode, raw.SourceClientId);
                 return null;
             }
 
@@ -59,6 +65,7 @@ public class RawProcessor
                 raw.ErrorCode = ErrorCodes.MissingReportId;
                 raw.ErrorMessage = "ReportId is missing or blank";
                 await _db.SaveChangesAsync();
+                _logger.LogWarning("Raw {RawId} marked error: {ErrorCode} (source {SourceClientId})", raw.Id, raw.ErrorCode, raw.SourceClientId);
                 return null;
             }
 
@@ -84,12 +91,15 @@ public class RawProcessor
                     .SetProperty(r => r.Status, "duplicate")
                     .SetProperty(r => r.ErrorCode, ErrorCodes.DuplicateKey)
                     .SetProperty(r => r.ErrorMessage, sqlEx.Message));
+            _logger.LogWarning("Raw {RawId} marked duplicate: {ErrorCode}",rawId, ErrorCodes.DuplicateKey);
             return null;
         }
         catch (Exception ex)
         {
             // 系統層級錯誤：直接更新 DB，不經過 change tracker，
             // 所以上面尚未寫成功的 Report 不會被一起送出
+            // 先記 log：若下面的標記本身也失敗，原始錯誤仍有紀錄
+            _logger.LogError(ex, "Raw {RawId} system error", rawId);
             await _db.Raws
                 .Where(r => r.Id == rawId && r.Status == "processing")
                 .ExecuteUpdateAsync(s => s

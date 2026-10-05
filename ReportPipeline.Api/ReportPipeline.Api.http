@@ -56,3 +56,44 @@ X-API-Key: {{ApiKey}}
 Content-Type: application/json
 
 {"reportId": "R902"}
+
+### 正常資料
+POST {{ReportPipelineApi_HostAddress}}/api/reports/raw
+X-API-Key: {{ApiKey}}
+Content-Type: application/json
+
+{
+  "reportId": "R1002",
+  "workOrderNo": "WO-01",
+  "itemCode": "ITEM-1",
+  "machineId": "M01",
+  "operatorId": "OP01",
+  "reportTime": "2026-10-05 10:00:00",
+  "quantityOK": 10,
+  "quantityNG": 0,
+  "ngCode": null,
+  "shift": "A"
+}
+
+### 缺 ReportId
+POST {{ReportPipelineApi_HostAddress}}/api/reports/raw
+X-API-Key: {{ApiKey}}
+Content-Type: application/json
+
+{
+  "workOrderNo": "WO-01",
+  "itemCode": "ITEM-1",
+  "machineId": "M01",
+  "operatorId": "OP01",
+  "reportTime": "2026-10-05 10:00:00",
+  "quantityOK": 10,
+  "quantityNG": 0,
+  "shift": "A"
+}
+
+### 重複：和第一筆同一個 reportId
+POST {{ReportPipelineApi_HostAddress}}/api/reports/raw
+X-API-Key: {{ApiKey}}
+Content-Type: application/json
+
+{"reportId": "R1002"}

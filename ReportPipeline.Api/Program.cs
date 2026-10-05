@@ -26,7 +26,6 @@ if (apiKeys is null || apiKeys.Count == 0)
     throw new InvalidOperationException("No API keys configured in 'ApiKeys'.");
 }
 
-Console.WriteLine($"[auth] 已載入 {apiKeys.Count} 把 API key");
 
 builder.Services.AddSingleton<IReadOnlyList<ApiKeyEntry>>(apiKeys);
 
@@ -47,6 +46,7 @@ builder.Services.AddHostedService<ChannelWorker>();
 builder.Services.AddHostedService<ScanWorker>();
 
 var app = builder.Build();
+app.Logger.LogInformation("Loaded {ApiKeyCount} API keys", apiKeys.Count);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
