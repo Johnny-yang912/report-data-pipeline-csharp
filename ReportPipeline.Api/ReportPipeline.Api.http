@@ -1,12 +1,6 @@
 @ReportPipelineApi_HostAddress = http://localhost:5245
 
 GET {{ReportPipelineApi_HostAddress}}/api/reports/raw/1
-X-API-Key: {{ApiKey}}
-
-###
-
-GET {{ReportPipelineApi_HostAddress}}/api/reports/raw/1
-X-API-Key: wrong-key
 
 ###
 

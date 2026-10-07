@@ -50,6 +50,7 @@ public class ReportsController : ControllerBase
     }
 
     [HttpPost("raw")]
+    [RequireApiKey]
     public async Task<IActionResult> PostRaw([FromBody] JsonElement body)
     {
         var clientId = HttpContext.Items[ApiKeyMiddleware.ClientIdItemKey] as string;

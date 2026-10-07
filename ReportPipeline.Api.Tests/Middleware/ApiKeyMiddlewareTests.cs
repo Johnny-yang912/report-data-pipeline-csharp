@@ -8,6 +8,19 @@ public class ApiKeyMiddlewareTests
         new ApiKeyEntry { Key = "test-key", ClientId = "CNC-03" }
     ];
 
+    private static DefaultHttpContext CreateContextWithApiKeyEndpoint()
+    {
+        var context = new DefaultHttpContext();
+
+        var endpoint = new Endpoint(
+            requestDelegate: null,
+            metadata: new EndpointMetadataCollection(new RequireApiKeyAttribute()),
+            displayName: "test");
+
+        context.SetEndpoint(endpoint);
+        return context;
+    }
+
     [Fact]
     public async Task ValidKey_CallsNext_AndSetsClientId()
     {
@@ -22,7 +35,7 @@ public class ApiKeyMiddlewareTests
 
         var middleware = new ApiKeyMiddleware(next, Keys, NullLogger<ApiKeyMiddleware>.Instance);
 
-        var context = new DefaultHttpContext();
+        var context = CreateContextWithApiKeyEndpoint();
         context.Request.Headers["X-API-Key"] = "test-key";
 
         await middleware.InvokeAsync(context);
@@ -47,8 +60,8 @@ public class ApiKeyMiddlewareTests
         var next = new RequestDelegate(FakeNext);
 
         var middleware = new ApiKeyMiddleware(next, Keys, NullLogger<ApiKeyMiddleware>.Instance);
-        
-        var context = new DefaultHttpContext();
+
+        var context = CreateContextWithApiKeyEndpoint();
 
         if (header is not null)
             context.Request.Headers["X-API-Key"] = header;
@@ -57,5 +70,25 @@ public class ApiKeyMiddlewareTests
 
         Assert.False(nextCalled);
         Assert.Equal(401, context.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task EndpointWithoutAttribute_SkipsValidation()
+    {
+        bool nextCalled = false;
+        Task FakeNext(HttpContext ctx)
+        {
+            nextCalled = true;
+            return Task.CompletedTask;
+        }
+        var next = new RequestDelegate(FakeNext);
+
+        var middleware = new ApiKeyMiddleware(next, Keys, NullLogger<ApiKeyMiddleware>.Instance);
+
+        var context = new DefaultHttpContext();   // 故意不放端點，也不帶 Key
+
+        await middleware.InvokeAsync(context);
+
+        Assert.True(nextCalled);
     }
 }

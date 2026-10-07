@@ -20,6 +20,15 @@ public class ApiKeyMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
+        var endpoint = context.GetEndpoint();
+        var requireKey = endpoint?.Metadata.GetMetadata<RequireApiKeyAttribute>();
+
+        if (requireKey is null)
+        {
+            await _next(context);   // 沒有標籤，直接放行
+            return;
+        }
+
         if (!context.Request.Headers.TryGetValue("X-API-Key", out var provided)
             || string.IsNullOrWhiteSpace(provided))
         {
