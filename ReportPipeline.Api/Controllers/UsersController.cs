@@ -11,10 +11,13 @@ public class ReportsController : ControllerBase
 
     private readonly ChannelWriter<int> _writer;
 
-    public ReportsController(AppDbContext db, ChannelWriter<int> writer)
+    private readonly ILogger<ReportsController> _logger;
+
+    public ReportsController(AppDbContext db, ChannelWriter<int> writer, ILogger<ReportsController> logger)
     {
         _db = db;
         _writer = writer;
+        _logger = logger;
     }
 
     [HttpGet("{id:int}")]
@@ -65,6 +68,34 @@ public class ReportsController : ControllerBase
         return Accepted(new { rawId = raw.Id, status = "pending" });
 
     }
+
+
+    [HttpPost("raw/{id:int}/reprocess")]
+    public async Task<IActionResult> ReprocessRaw(int id)
+    {
+        var raw = await _db.Raws
+            .Where(r => r.Id == id)
+            .FirstOrDefaultAsync();
+        if (raw == null) return NotFound();
+
+        var affected = await _db.Raws
+            .Where(r => r.Id == id && (r.Status == "error" || r.Status == "duplicate"))
+            .ExecuteUpdateAsync(r => r
+                .SetProperty(x => x.Status, "pending")
+                .SetProperty(x => x.ClaimedAt, (DateTime?)null)
+                .SetProperty(x => x.ErrorCode, (string?)null)
+                .SetProperty(x => x.ErrorMessage, (string?)null));
+
+        if (affected == 0)
+            return Conflict("Raw is not in an error or duplicate state");
+
+        _logger.LogWarning("reprocess raw {RawId}: previous status {Status}, error {ErrorCode}", raw.Id, raw.Status, raw.ErrorCode);
+
+        // 寫入失敗沒關係，補撈機制會撿回 pending
+        _writer.TryWrite(raw.Id);
+        return Accepted(new { rawId = raw.Id});
+    }
+
 
     [HttpGet("raw/{id:int}")]
     public async Task<ActionResult<RawResponse>> GetRaw(int id)
