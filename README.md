@@ -69,7 +69,7 @@ Raw 落地即持久化，處理進度完全由 DB 的 status 表示。背景派�
 | claim 後崩潰的恢復 | stale 掃描 | 相同 |
 | 清理規則 | 完整業務規則 | 基本型別與格式清理 |
 | 例外處理 | 依錯誤類型分類 | 統一捕捉 |
-| 重試機制 | 有 | 尚未實作 |
+| 重試機制 | 有 | DB 暫時性錯誤由 EF Core 執行策略重試（ADR-0003） |
 
 ### 任務派發：以 BackgroundService + Channel 取代 Celery + Redis
 

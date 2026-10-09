@@ -32,7 +32,11 @@ builder.Services.AddSingleton<IReadOnlyList<ApiKeyEntry>>(apiKeys);
 builder.Services.AddScoped<RawProcessor>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString, sql =>
+         sql.EnableRetryOnFailure(
+             maxRetryCount: 3,
+             maxRetryDelay: TimeSpan.FromSeconds(5),
+             errorNumbersToAdd: null)));
 
 builder.Services.AddSingleton(Channel.CreateBounded<int>(
     new BoundedChannelOptions(100)
